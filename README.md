@@ -84,15 +84,38 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
+Output of `python -m src.main`:
 
 ```
-# e.g.:
-# User profile: genre=indie, mood=chill, energy=low
-# Recommendations:
-#   1. ...
-#   2. ...
-#   3. ...
+Loaded songs: 18
+
+=== Pop / Happy ===
+Profile: genre=pop, mood=happy, energy=0.8
+--------------------------------------------------
+1. Sunrise City by Neon Echo  (Score: 3.98)
+   Because: genre match (+2.0), mood match (+1.0), energy closeness (+0.98)
+2. Gym Hero by Max Pulse  (Score: 2.87)
+   Because: genre match (+2.0), energy closeness (+0.87)
+3. Rooftop Lights by Indigo Parade  (Score: 1.96)
+   Because: mood match (+1.0), energy closeness (+0.96)
+4. Concrete Crown by Blockline  (Score: 0.98)
+   Because: energy closeness (+0.98)
+5. Night Drive Loop by Neon Echo  (Score: 0.95)
+   Because: energy closeness (+0.95)
+
+=== Chill Study ===
+Profile: genre=lofi, mood=chill, energy=0.4, likes_acoustic=True
+--------------------------------------------------
+1. Midnight Coding by LoRoom  (Score: 4.48)
+   Because: genre match (+2.0), mood match (+1.0), energy closeness (+0.98), acoustic sound (+0.5)
+2. Library Rain by Paper Lanterns  (Score: 4.45)
+   Because: genre match (+2.0), mood match (+1.0), energy closeness (+0.95), acoustic sound (+0.5)
+3. Focus Flow by LoRoom  (Score: 3.50)
+   Because: genre match (+2.0), energy closeness (+1.00), acoustic sound (+0.5)
+4. Spacewalk Thoughts by Orbit Bloom  (Score: 2.38)
+   Because: mood match (+1.0), energy closeness (+0.88), acoustic sound (+0.5)
+5. Coffee Shop Stories by Slow Stereo  (Score: 1.47)
+   Because: energy closeness (+0.97), acoustic sound (+0.5)
 ```
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
