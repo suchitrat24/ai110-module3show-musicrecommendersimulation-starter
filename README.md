@@ -33,6 +33,8 @@ For each song:
 
 Then sort all songs by score (highest first) and return the top K.
 
+These are the `genre_first` weights. See the Project Summary for the other scoring modes, the advanced features and the diversity penalty.
+
 ### Data Flow
 
 ```

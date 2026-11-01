@@ -67,7 +67,7 @@ The biggest weakness I found is that **energy points go to every song, for every
 
 ## 7. Evaluation  
 
-I tested 6 profiles: 3 normal ones (High-Energy Pop, Chill Lofi, Deep Intense Rock) and 3 edge cases meant to trick the scoring (Sad but High Energy, Unknown Genre, Loud Acoustic Fan). Here's the top 5 for each, from `python -m src.main`:
+I tested 6 profiles: 3 normal ones (High-Energy Pop, Chill Lofi, Deep Intense Rock) and 3 edge cases meant to trick the scoring (Sad but High Energy, Unknown Genre, Loud Acoustic Fan). Here's the top 5 for each, from `python -m src.main`. (These outputs were captured before I added the diversity penalty and table layout, so a few rankings are slightly different now.)
 
 ```
 === High-Energy Pop ===
