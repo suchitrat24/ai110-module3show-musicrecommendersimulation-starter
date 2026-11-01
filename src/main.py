@@ -29,19 +29,19 @@ def main() -> None:
     songs = load_songs("data/songs.csv")
     print(f"Loaded songs: {len(songs)}")
 
-    # Default profile
-    pop_happy = {"genre": "pop", "mood": "happy", "energy": 0.8}
-
-    # Taste profile: chill study music
-    chill_study = {
-        "genre": "lofi",
-        "mood": "chill",
-        "energy": 0.4,
-        "likes_acoustic": True,
+    profiles = {
+        # Normal profiles
+        "High-Energy Pop": {"genre": "pop", "mood": "happy", "energy": 0.8},
+        "Chill Lofi": {"genre": "lofi", "mood": "chill", "energy": 0.4, "likes_acoustic": True},
+        "Deep Intense Rock": {"genre": "rock", "mood": "intense", "energy": 0.9},
+        # Edge cases: try to trick the scoring
+        "Sad but High Energy": {"genre": "folk", "mood": "sad", "energy": 0.9},
+        "Unknown Genre": {"genre": "k-pop", "mood": "happy", "energy": 0.7},
+        "Loud Acoustic Fan": {"genre": "metal", "mood": "angry", "energy": 0.95, "likes_acoustic": True},
     }
 
-    print_recommendations("Pop / Happy", pop_happy, songs)
-    print_recommendations("Chill Study", chill_study, songs)
+    for label, user_prefs in profiles.items():
+        print_recommendations(label, user_prefs, songs)
 
 
 if __name__ == "__main__":

@@ -2,6 +2,12 @@ from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass, asdict
 import csv
 
+# Scoring weights (the "Algorithm Recipe")
+GENRE_WEIGHT = 2.0
+MOOD_WEIGHT = 1.0
+ENERGY_WEIGHT = 1.0
+ACOUSTIC_BONUS = 0.5
+
 @dataclass
 class Song:
     """
@@ -77,21 +83,21 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     reasons = []
 
     if song["genre"] == user_prefs.get("genre"):
-        score += 2.0
-        reasons.append("genre match (+2.0)")
+        score += GENRE_WEIGHT
+        reasons.append(f"genre match (+{GENRE_WEIGHT:.1f})")
 
     if song["mood"] == user_prefs.get("mood"):
-        score += 1.0
-        reasons.append("mood match (+1.0)")
+        score += MOOD_WEIGHT
+        reasons.append(f"mood match (+{MOOD_WEIGHT:.1f})")
 
     if "energy" in user_prefs:
-        energy_points = 1 - abs(song["energy"] - user_prefs["energy"])
+        energy_points = ENERGY_WEIGHT * (1 - abs(song["energy"] - user_prefs["energy"]))
         score += energy_points
         reasons.append(f"energy closeness (+{energy_points:.2f})")
 
     if user_prefs.get("likes_acoustic") and song["acousticness"] > 0.6:
-        score += 0.5
-        reasons.append("acoustic sound (+0.5)")
+        score += ACOUSTIC_BONUS
+        reasons.append(f"acoustic sound (+{ACOUSTIC_BONUS:.1f})")
 
     return score, reasons
 
