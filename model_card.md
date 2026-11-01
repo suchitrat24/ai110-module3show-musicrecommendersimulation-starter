@@ -2,20 +2,24 @@
 
 ## 1. Model Name  
 
-Give your model a short, descriptive name.  
-Example: **VibeFinder 1.0**  
+**VibeMatch 1.0**
 
 ---
 
 ## 2. Intended Use  
 
-Describe what your recommender is designed to do and who it is for. 
+**Goal:** VibeMatch suggests the top 5 songs from a small catalog that best fit what a user says they like: a favorite genre, a favorite mood, an energy level, and whether they like acoustic music.
 
-Prompts:  
+**Intended use:**
+- A classroom project for learning how content-based recommenders score and rank items.
+- Trying out different user profiles and weights to see how the results change.
 
-- What kind of recommendations does it generate  
-- What assumptions does it make about the user  
-- Is this for real users or classroom exploration  
+**Not intended for:**
+- Real users or a real music app. The catalog has only 18 songs, which is far too small.
+- Judging what someone "should" like. It only knows four preferences, so it can't capture anyone's full taste.
+- Anything where a bad suggestion matters, like picking music for therapy or for events.
+
+It assumes the user can describe their taste with one genre, one mood and one energy number, and that they want the same vibe across all 5 songs.
 
 ---
 
@@ -35,26 +39,23 @@ Compared to the starter code, I added the energy closeness score and the acousti
 
 ## 4. Data  
 
-Describe the dataset the model uses.  
-
-Prompts:  
-
-- How many songs are in the catalog  
-- What genres or moods are represented  
-- Did you add or remove data  
-- Are there parts of musical taste missing in the dataset  
+- **Size:** 18 songs in `data/songs.csv`. The starter had 10, and I added 8 more.
+- **Features per song:** genre, mood, energy, tempo_bpm, valence, danceability and acousticness. The numbers are on a 0–1 scale, except tempo, which is in beats per minute.
+- **What I added:** one song for each of hip hop, country, classical, metal, r&b, edm, reggae and folk, each with a new mood (confident, nostalgic, peaceful, angry, romantic, energetic, uplifting, sad).
+- **Limits:**
+  - Most genres have only one song. Lofi has the most, with 3.
+  - The songs and numbers are made up, not real listening data.
+  - There's no lyrics, language, artist popularity or listening history.
+  - Tempo, valence and danceability are in the data but not used in scoring yet.
 
 ---
 
 ## 5. Strengths  
 
-Where does your system seem to work well  
-
-Prompts:  
-
-- User types for which it gives reasonable results  
-- Any patterns you think your scoring captures correctly  
-- Cases where the recommendations matched your intuition  
+- Works well when the user's genre and mood both exist in the catalog. Chill Lofi, Deep Intense Rock and High-Energy Pop all got a #1 song that felt exactly right.
+- Clearly separates opposite tastes. "Intense rock" and "chill lofi" share no songs in their top 5.
+- When the genre doesn't exist (like k-pop), it still gives sensible picks based on mood and energy instead of breaking.
+- Every recommendation shows its reasons, like `genre match (+2.0)`, so it's easy to see why a song ranked where it did.
 
 ---
 
@@ -201,23 +202,18 @@ Overall the weight shift made things a bit more accurate, mostly by stopping gen
 
 ## 8. Future Work  
 
-Ideas for how you would improve the model next.  
-
-Prompts:  
-
-- Additional features or preferences  
-- Better ways to explain recommendations  
-- Improving diversity among the top results  
-- Handling more complex user tastes  
+1. **Lower the genre weight or give partial credit for related genres**, so "indie pop" counts a little toward "pop," and a happy song isn't beaten by an intense one just because of its label.
+2. **Use more features**, like valence for how happy or sad a song sounds and tempo. Then "sad" and "high energy" could be balanced better.
+3. **Add variety to the top 5**, for example a limit of one song per artist, or making sure the same loud song (Gym Hero) doesn't fill every list.
 
 ---
 
 ## 9. Personal Reflection  
 
-A few sentences about your experience.  
+**Biggest learning moment:** I learned how much the weights decide everything. Changing the genre weight from 2 to 1 changed which song came second for pop fans. The "intelligence" of the system is really just a few numbers I picked.
 
-Prompts:  
+**Using AI tools:** AI helped me write the CSV loader, the scoring function and the edge-case profiles quickly. I still had to check its work by running the program and reading the output. For example, the acoustic bonus looked fine in code, but the output showed it pushed lofi songs into a metal fan's list. The AI didn't catch that until we looked at real results.
 
-- What you learned about recommender systems  
-- Something unexpected or interesting you discovered  
-- How this changed the way you think about music recommendation apps  
+**What surprised me:** Even simple rules like "add 2 points for genre" produced lists that felt like real recommendations. The reasons printed next to each song made it feel smart, even though it's just addition and sorting.
+
+**What I'd try next:** I'd add valence and tempo to the score, give partial credit for similar genres, and test with a bigger catalog to see if the "Gym Hero everywhere" problem goes away.
