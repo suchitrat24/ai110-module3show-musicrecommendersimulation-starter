@@ -7,6 +7,11 @@ GENRE_WEIGHT = 2.0
 MOOD_WEIGHT = 1.0
 ENERGY_WEIGHT = 1.0
 ACOUSTIC_BONUS = 0.5
+POPULARITY_WEIGHT = 0.5
+DECADE_BONUS = 0.5
+MOOD_TAG_BONUS = 0.3
+INSTRUMENTAL_BONUS = 0.5
+LIVE_BONUS = 0.3
 
 @dataclass
 class Song:
@@ -65,8 +70,9 @@ def _profile_to_prefs(user: UserProfile) -> Dict:
 
 def load_songs(csv_path: str) -> List[Dict]:
     """Read songs.csv into a list of dicts with numeric columns converted to numbers."""
-    int_fields = {"id"}
-    float_fields = {"energy", "tempo_bpm", "valence", "danceability", "acousticness"}
+    int_fields = {"id", "popularity", "release_decade"}
+    float_fields = {"energy", "tempo_bpm", "valence", "danceability", "acousticness",
+                    "instrumentalness", "liveness"}
     songs = []
     with open(csv_path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
@@ -74,6 +80,7 @@ def load_songs(csv_path: str) -> List[Dict]:
                 row[key] = int(row[key])
             for key in float_fields:
                 row[key] = float(row[key])
+            row["mood_tags"] = row["mood_tags"].split(";")
             songs.append(row)
     return songs
 
@@ -98,6 +105,29 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     if user_prefs.get("likes_acoustic") and song["acousticness"] > 0.6:
         score += ACOUSTIC_BONUS
         reasons.append(f"acoustic sound (+{ACOUSTIC_BONUS:.1f})")
+
+    # Advanced features (only used if the song and user both have them)
+    if "popularity" in user_prefs and "popularity" in song:
+        pop_points = POPULARITY_WEIGHT * (1 - abs(song["popularity"] - user_prefs["popularity"]) / 100)
+        score += pop_points
+        reasons.append(f"popularity closeness (+{pop_points:.2f})")
+
+    if "decade" in user_prefs and song.get("release_decade") == user_prefs["decade"]:
+        score += DECADE_BONUS
+        reasons.append(f"{song['release_decade']}s match (+{DECADE_BONUS:.1f})")
+
+    for tag in user_prefs.get("mood_tags", []):
+        if tag in song.get("mood_tags", []):
+            score += MOOD_TAG_BONUS
+            reasons.append(f"'{tag}' tag (+{MOOD_TAG_BONUS:.1f})")
+
+    if user_prefs.get("likes_instrumental") and song.get("instrumentalness", 0) > 0.6:
+        score += INSTRUMENTAL_BONUS
+        reasons.append(f"instrumental (+{INSTRUMENTAL_BONUS:.1f})")
+
+    if user_prefs.get("likes_live") and song.get("liveness", 0) > 0.5:
+        score += LIVE_BONUS
+        reasons.append(f"live feel (+{LIVE_BONUS:.1f})")
 
     return score, reasons
 

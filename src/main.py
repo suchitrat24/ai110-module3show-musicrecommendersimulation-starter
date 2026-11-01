@@ -38,6 +38,16 @@ def main() -> None:
         "Sad but High Energy": {"genre": "folk", "mood": "sad", "energy": 0.9},
         "Unknown Genre": {"genre": "k-pop", "mood": "happy", "energy": 0.7},
         "Loud Acoustic Fan": {"genre": "metal", "mood": "angry", "energy": 0.95, "likes_acoustic": True},
+        # Uses the advanced features
+        "Nostalgic Night Drive": {
+            "genre": "synthwave",
+            "mood": "moody",
+            "energy": 0.6,
+            "popularity": 60,
+            "decade": 1980,
+            "mood_tags": ["nostalgic", "dreamy"],
+            "likes_instrumental": True,
+        },
     }
 
     for label, user_prefs in profiles.items():
