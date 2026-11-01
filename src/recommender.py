@@ -2,10 +2,16 @@ from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass, asdict
 import csv
 
-# Scoring weights (the "Algorithm Recipe")
-GENRE_WEIGHT = 2.0
-MOOD_WEIGHT = 1.0
-ENERGY_WEIGHT = 1.0
+# Scoring modes (Strategy pattern): each mode is a different set of weights
+# for the three main features. Pick one by name when scoring.
+SCORING_MODES = {
+    "genre_first": {"genre": 2.0, "mood": 1.0, "energy": 1.0},
+    "mood_first": {"genre": 1.0, "mood": 2.0, "energy": 1.0},
+    "energy_focused": {"genre": 0.5, "mood": 0.5, "energy": 3.0},
+}
+DEFAULT_MODE = "genre_first"
+
+# Bonus weights for the extra features (same in every mode)
 ACOUSTIC_BONUS = 0.5
 POPULARITY_WEIGHT = 0.5
 DECADE_BONUS = 0.5
@@ -84,21 +90,22 @@ def load_songs(csv_path: str) -> List[Dict]:
             songs.append(row)
     return songs
 
-def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
-    """Score one song against the user's preferences and return (score, reasons)."""
+def score_song(user_prefs: Dict, song: Dict, mode: str = DEFAULT_MODE) -> Tuple[float, List[str]]:
+    """Score one song against the user's preferences using the chosen mode and return (score, reasons)."""
+    weights = SCORING_MODES[mode]
     score = 0.0
     reasons = []
 
     if song["genre"] == user_prefs.get("genre"):
-        score += GENRE_WEIGHT
-        reasons.append(f"genre match (+{GENRE_WEIGHT:.1f})")
+        score += weights["genre"]
+        reasons.append(f"genre match (+{weights['genre']:.1f})")
 
     if song["mood"] == user_prefs.get("mood"):
-        score += MOOD_WEIGHT
-        reasons.append(f"mood match (+{MOOD_WEIGHT:.1f})")
+        score += weights["mood"]
+        reasons.append(f"mood match (+{weights['mood']:.1f})")
 
     if "energy" in user_prefs:
-        energy_points = ENERGY_WEIGHT * (1 - abs(song["energy"] - user_prefs["energy"]))
+        energy_points = weights["energy"] * (1 - abs(song["energy"] - user_prefs["energy"]))
         score += energy_points
         reasons.append(f"energy closeness (+{energy_points:.2f})")
 
@@ -131,10 +138,11 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
 
     return score, reasons
 
-def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
-    """Score every song, sort from highest to lowest, and return the top k with explanations."""
+def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5,
+                    mode: str = DEFAULT_MODE) -> List[Tuple[Dict, float, str]]:
+    """Score every song with the chosen mode, sort from highest to lowest, and return the top k with explanations."""
     scored = []
     for song in songs:
-        score, reasons = score_song(user_prefs, song)
+        score, reasons = score_song(user_prefs, song, mode)
         scored.append((song, score, ", ".join(reasons)))
     return sorted(scored, key=lambda item: item[1], reverse=True)[:k]

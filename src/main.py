@@ -9,25 +9,34 @@ You will implement the functions in recommender.py:
 - recommend_songs
 """
 
+import sys
+
 try:
-    from src.recommender import load_songs, recommend_songs
+    from src.recommender import load_songs, recommend_songs, SCORING_MODES, DEFAULT_MODE
 except ImportError:
-    from recommender import load_songs, recommend_songs
+    from recommender import load_songs, recommend_songs, SCORING_MODES, DEFAULT_MODE
 
 
-def print_recommendations(label: str, user_prefs: dict, songs: list, k: int = 5) -> None:
+def print_recommendations(label: str, user_prefs: dict, songs: list, mode: str, k: int = 5) -> None:
     """Print the top k songs for a profile with scores and reasons."""
     print(f"\n=== {label} ===")
     print("Profile: " + ", ".join(f"{key}={value}" for key, value in user_prefs.items()))
     print("-" * 50)
-    for rank, (song, score, explanation) in enumerate(recommend_songs(user_prefs, songs, k), start=1):
+    for rank, (song, score, explanation) in enumerate(recommend_songs(user_prefs, songs, k, mode), start=1):
         print(f"{rank}. {song['title']} by {song['artist']}  (Score: {score:.2f})")
         print(f"   Because: {explanation}")
 
 
 def main() -> None:
+    # Switch modes from the command line: python -m src.main mood_first
+    mode = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_MODE
+    if mode not in SCORING_MODES:
+        print(f"Unknown mode '{mode}'. Choose from: {', '.join(SCORING_MODES)}")
+        return
+
     songs = load_songs("data/songs.csv")
     print(f"Loaded songs: {len(songs)}")
+    print(f"Scoring mode: {mode}")
 
     profiles = {
         # Normal profiles
@@ -51,7 +60,7 @@ def main() -> None:
     }
 
     for label, user_prefs in profiles.items():
-        print_recommendations(label, user_prefs, songs)
+        print_recommendations(label, user_prefs, songs, mode)
 
 
 if __name__ == "__main__":
