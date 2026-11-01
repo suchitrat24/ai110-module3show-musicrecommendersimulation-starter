@@ -2,16 +2,16 @@
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
+My version is called **VibeMatch**. It's a small content-based music recommender that runs in the terminal. It reads 18 songs from `data/songs.csv`, compares each one to a user's taste profile, and prints the top 5 matches in a table with a score and the reasons behind each pick.
 
-Your goal is to:
+What it does:
 
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
+- **Scores songs** on genre, mood and how close the energy is to what the user wants, plus optional extras: popularity, release decade, mood tags (like "nostalgic" or "dreamy"), instrumental songs and live-sounding songs.
+- **Has 3 scoring modes** you can switch between: `genre_first` (default), `mood_first` and `energy_focused`. Run `python -m src.main mood_first` to try one.
+- **Keeps the top 5 varied** by taking points off a song if its artist or genre is already in the list.
+- **Explains every pick**, e.g. `genre match (+2.0), repeat artist (-1.0)`.
 
-Replace this paragraph with your own summary of what your version does.
+I tested it with several user profiles, including tricky ones like "sad but high energy," and wrote up what works and what doesn't in [model_card.md](model_card.md).
 
 ---
 
@@ -19,7 +19,7 @@ Replace this paragraph with your own summary of what your version does.
 
 Apps like Spotify recommend songs based on what similar people listen to and on what the songs sound like. My version only does the second part: it compares each song's features to what the user likes. Genre matters most, then mood, then energy. For energy, a song scores higher the closer it is to the user's target, so higher energy doesn't automatically win. Each song gets a score, then all the songs are sorted and the top few are recommended.
 
-- **Song features:** genre, mood, energy, tempo_bpm, valence, danceability, acousticness
+- **Song features:** genre, mood, energy, tempo_bpm, valence, danceability, acousticness, plus advanced ones: popularity (0–100), release_decade, mood_tags, instrumentalness, liveness
 - **UserProfile features:** favorite_genre, favorite_mood, target_energy, likes_acoustic
 
 ### Algorithm Recipe
@@ -84,38 +84,52 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Output of `python -m src.main`:
+Output of `python -m src.main` (first two profiles, default `genre_first` mode):
 
 ```
 Loaded songs: 18
+Scoring mode: genre_first
 
-=== Pop / Happy ===
+=== High-Energy Pop ===
 Profile: genre=pop, mood=happy, energy=0.8
---------------------------------------------------
-1. Sunrise City by Neon Echo  (Score: 3.98)
-   Because: genre match (+2.0), mood match (+1.0), energy closeness (+0.98)
-2. Gym Hero by Max Pulse  (Score: 2.87)
-   Because: genre match (+2.0), energy closeness (+0.87)
-3. Rooftop Lights by Indigo Parade  (Score: 1.96)
-   Because: mood match (+1.0), energy closeness (+0.96)
-4. Concrete Crown by Blockline  (Score: 0.98)
-   Because: energy closeness (+0.98)
-5. Night Drive Loop by Neon Echo  (Score: 0.95)
-   Because: energy closeness (+0.95)
++-----+------------------------+------------------+--------+------------------------------------------------+
+| #   | Title                  | Artist           | Score  | Reasons                                        |
++=====+========================+==================+========+================================================+
+| 1   | Sunrise City           | Neon Echo        | 3.98   | genre match (+2.0), mood match (+1.0), energy  |
+|     |                        |                  |        | closeness (+0.98)                              |
++-----+------------------------+------------------+--------+------------------------------------------------+
+| 2   | Gym Hero               | Max Pulse        | 2.37   | genre match (+2.0), energy closeness (+0.87),  |
+|     |                        |                  |        | repeat genre (-0.5)                            |
++-----+------------------------+------------------+--------+------------------------------------------------+
+| 3   | Rooftop Lights         | Indigo Parade    | 1.96   | mood match (+1.0), energy closeness (+0.96)    |
++-----+------------------------+------------------+--------+------------------------------------------------+
+| 4   | Concrete Crown         | Blockline        | 0.98   | energy closeness (+0.98)                       |
++-----+------------------------+------------------+--------+------------------------------------------------+
+| 5   | Storm Runner           | Voltline         | 0.89   | energy closeness (+0.89)                       |
++-----+------------------------+------------------+--------+------------------------------------------------+
 
-=== Chill Study ===
+=== Chill Lofi ===
 Profile: genre=lofi, mood=chill, energy=0.4, likes_acoustic=True
---------------------------------------------------
-1. Midnight Coding by LoRoom  (Score: 4.48)
-   Because: genre match (+2.0), mood match (+1.0), energy closeness (+0.98), acoustic sound (+0.5)
-2. Library Rain by Paper Lanterns  (Score: 4.45)
-   Because: genre match (+2.0), mood match (+1.0), energy closeness (+0.95), acoustic sound (+0.5)
-3. Focus Flow by LoRoom  (Score: 3.50)
-   Because: genre match (+2.0), energy closeness (+1.00), acoustic sound (+0.5)
-4. Spacewalk Thoughts by Orbit Bloom  (Score: 2.38)
-   Because: mood match (+1.0), energy closeness (+0.88), acoustic sound (+0.5)
-5. Coffee Shop Stories by Slow Stereo  (Score: 1.47)
-   Because: energy closeness (+0.97), acoustic sound (+0.5)
++-----+------------------------+------------------+--------+------------------------------------------------+
+| #   | Title                  | Artist           | Score  | Reasons                                        |
++=====+========================+==================+========+================================================+
+| 1   | Midnight Coding        | LoRoom           | 4.48   | genre match (+2.0), mood match (+1.0), energy  |
+|     |                        |                  |        | closeness (+0.98), acoustic sound (+0.5)       |
++-----+------------------------+------------------+--------+------------------------------------------------+
+| 2   | Library Rain           | Paper Lanterns   | 3.95   | genre match (+2.0), mood match (+1.0), energy  |
+|     |                        |                  |        | closeness (+0.95), acoustic sound (+0.5),      |
+|     |                        |                  |        | repeat genre (-0.5)                            |
++-----+------------------------+------------------+--------+------------------------------------------------+
+| 3   | Spacewalk Thoughts     | Orbit Bloom      | 2.38   | mood match (+1.0), energy closeness (+0.88),   |
+|     |                        |                  |        | acoustic sound (+0.5)                          |
++-----+------------------------+------------------+--------+------------------------------------------------+
+| 4   | Focus Flow             | LoRoom           | 2.00   | genre match (+2.0), energy closeness (+1.00),  |
+|     |                        |                  |        | acoustic sound (+0.5), repeat artist (-1.0),   |
+|     |                        |                  |        | repeat genre (-0.5)                            |
++-----+------------------------+------------------+--------+------------------------------------------------+
+| 5   | Coffee Shop Stories    | Slow Stereo      | 1.47   | energy closeness (+0.97), acoustic sound       |
+|     |                        |                  |        | (+0.5)                                         |
++-----+------------------------+------------------+--------+------------------------------------------------+
 ```
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->

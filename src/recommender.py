@@ -19,6 +19,10 @@ MOOD_TAG_BONUS = 0.3
 INSTRUMENTAL_BONUS = 0.5
 LIVE_BONUS = 0.3
 
+# Diversity penalties: subtracted when an artist or genre is already in the top list
+ARTIST_PENALTY = 1.0
+GENRE_PENALTY = 0.5
+
 @dataclass
 class Song:
     """
@@ -139,10 +143,33 @@ def score_song(user_prefs: Dict, song: Dict, mode: str = DEFAULT_MODE) -> Tuple[
     return score, reasons
 
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5,
-                    mode: str = DEFAULT_MODE) -> List[Tuple[Dict, float, str]]:
-    """Score every song with the chosen mode, sort from highest to lowest, and return the top k with explanations."""
-    scored = []
+                    mode: str = DEFAULT_MODE, diverse: bool = True) -> List[Tuple[Dict, float, str]]:
+    """Score every song with the chosen mode and return the top k, penalizing repeat artists and genres if diverse."""
+    remaining = []
     for song in songs:
         score, reasons = score_song(user_prefs, song, mode)
-        scored.append((song, score, ", ".join(reasons)))
-    return sorted(scored, key=lambda item: item[1], reverse=True)[:k]
+        remaining.append((song, score, reasons))
+
+    if not diverse:
+        ranked = sorted(remaining, key=lambda item: item[1], reverse=True)[:k]
+        return [(song, score, ", ".join(reasons)) for song, score, reasons in ranked]
+
+    # Pick one song at a time, re-checking penalties against what's already picked
+    picked = []
+    while remaining and len(picked) < k:
+        best = None
+        for item in remaining:
+            song, score, reasons = item
+            penalty_reasons = []
+            if any(p[0]["artist"] == song["artist"] for p in picked):
+                score -= ARTIST_PENALTY
+                penalty_reasons.append(f"repeat artist (-{ARTIST_PENALTY:.1f})")
+            if any(p[0]["genre"] == song["genre"] for p in picked):
+                score -= GENRE_PENALTY
+                penalty_reasons.append(f"repeat genre (-{GENRE_PENALTY:.1f})")
+            if best is None or score > best[1]:
+                best = (song, score, reasons + penalty_reasons, item)
+        song, score, reasons, item = best
+        picked.append((song, score, ", ".join(reasons)))
+        remaining.remove(item)
+    return picked

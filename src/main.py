@@ -10,6 +10,7 @@ You will implement the functions in recommender.py:
 """
 
 import sys
+import textwrap
 
 try:
     from src.recommender import load_songs, recommend_songs, SCORING_MODES, DEFAULT_MODE
@@ -18,13 +19,26 @@ except ImportError:
 
 
 def print_recommendations(label: str, user_prefs: dict, songs: list, mode: str, k: int = 5) -> None:
-    """Print the top k songs for a profile with scores and reasons."""
+    """Print the top k songs for a profile as an ASCII table with scores and reasons."""
     print(f"\n=== {label} ===")
     print("Profile: " + ", ".join(f"{key}={value}" for key, value in user_prefs.items()))
-    print("-" * 50)
+
+    widths = [3, 22, 16, 6, 46]
+    divider = "+" + "+".join("-" * (w + 2) for w in widths) + "+"
+
+    def row(cells):
+        # Wrap each cell to its column width, then print the wrapped lines side by side
+        wrapped = [textwrap.wrap(str(c), w) or [""] for c, w in zip(cells, widths)]
+        for i in range(max(len(lines) for lines in wrapped)):
+            parts = [(lines[i] if i < len(lines) else "").ljust(w) for lines, w in zip(wrapped, widths)]
+            print("| " + " | ".join(parts) + " |")
+
+    print(divider)
+    row(["#", "Title", "Artist", "Score", "Reasons"])
+    print(divider.replace("-", "="))
     for rank, (song, score, explanation) in enumerate(recommend_songs(user_prefs, songs, k, mode), start=1):
-        print(f"{rank}. {song['title']} by {song['artist']}  (Score: {score:.2f})")
-        print(f"   Because: {explanation}")
+        row([rank, song["title"], song["artist"], f"{score:.2f}", explanation])
+        print(divider)
 
 
 def main() -> None:
